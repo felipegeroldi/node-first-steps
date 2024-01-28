@@ -1,10 +1,10 @@
 var express = require('express');
 var router = express.Router();
 
-var db = require('../db');
+var mongoose = require('mongoose');
 
 router.get('/', (req, res, next) => {
-    db('musicas').then((musicas) => {
+    mongoose.model('Musica').find().then((musicas) => {
         res.render('index', {
             musicas: musicas
         });
@@ -16,55 +16,41 @@ router.get('/add', (req, res, next) => {
 });
 
 router.post('/', (req, res, next) => {
-    db('musicas').insert(req.body).then((ids) => {
+    var Musica = mongoose.model('Musica');
+    var m = new Musica(req.body);
+
+    m.save().then((result) => {
         res.redirect('/');
     }, next);
 });
 
 router.get('/edit/:id', (req, res, next) => {
     const { id } = req.params;
-    db('musicas')
-        .where('id', id)
-        .first()
-        .then((musica) => {
-            if(!musica) {
-                return res.send(400);
-            }
-
-            res.render('edit', {
-                musica: musica
-            });
-        }, next);
+    mongoose.model('Musica').findOne({_id: id}).then((musica) => {
+        res.render('edit', { musica: musica });
+    });
 });
 
 router.put('/edit/:id', (req, res, next) => {
     const { id } = req.params;
 
-    db('musicas')
-        .where('id', id)
-        .update(req.body)
-        .then((result) => {
-            if (result === 0) {
-                return res.send(400);
-            }
-
-            res.redirect('/');
-        }, next);
+    mongoose.model('Musica').findOneAndUpdate({ _id: id },
+        {
+            nome: req.body.nome,
+            artista: req.body.artista,
+            estrelas: req.body.estrelas
+        }
+    ).then((musica) => {
+        res.redirect('/');
+    }, next);
 });
 
 router.delete('/delete/:id', (req, res, next) => {
     const { id } = req.params;
 
-    db('musicas')
-        .where('id', id)
-        .delete()
-        .then((result) => {
-            if (result === 0) {
-                return res.send(400);
-            }
-
-            res.redirect('/');
-        }, next);
+    mongoose.model('Musica').findOneAndDelete({ _id: id }).then((musica) => {
+        res.redirect('/');
+    });
 });
 
 module.exports = router;

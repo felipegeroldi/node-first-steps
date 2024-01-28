@@ -7,7 +7,12 @@ var logger = require('morgan');
 var indexRouter = require('./routes/musicas');
 
 var expressNunjucks = require('express-nunjucks').default;
-var methodOverride = require('method-override');
+var methodOverride = require('method-override')
+
+require('./models/musics');
+var mongoose = require('mongoose');
+mongoose.Promise = require('bluebird');
+mongoose.connect('mongodb://localhost/musics');
 
 var app = express();
 
